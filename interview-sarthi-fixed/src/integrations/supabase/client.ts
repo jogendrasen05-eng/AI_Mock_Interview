@@ -2,21 +2,40 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+const FALLBACK_SUPABASE_URL = "https://vzzwkqvbimamyofngdsi.supabase.co";
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6endrcXZiaW1hbXlvZm5nZHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTQ3MTcsImV4cCI6MjA5MzMzMDcxN30.IxxSvQQNPBpdX8uo6Gg-AQfUhuTQVkWu2lc_iuoB120";
 
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-    ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
-  }
+function isDummyOrEmpty(val?: string | null): boolean {
+  if (!val || typeof val !== "string") return true;
+  const trimmed = val.trim();
+  return (
+    trimmed === "" ||
+    trimmed.includes("your-supabase") ||
+    trimmed.includes("your-project") ||
+    trimmed.includes("<")
+  );
+}
+
+function createSupabaseClient() {
+  const envUrl =
+    import.meta.env.VITE_SUPABASE_URL ||
+    (typeof process !== "undefined" &&
+      (process.env?.VITE_SUPABASE_URL || process.env?.SUPABASE_URL));
+
+  const envKey =
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    (typeof process !== "undefined" &&
+      (process.env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        process.env?.VITE_SUPABASE_ANON_KEY ||
+        process.env?.SUPABASE_PUBLISHABLE_KEY ||
+        process.env?.SUPABASE_ANON_KEY));
+
+  const SUPABASE_URL = !isDummyOrEmpty(envUrl) ? (envUrl as string) : FALLBACK_SUPABASE_URL;
+  const SUPABASE_PUBLISHABLE_KEY = !isDummyOrEmpty(envKey)
+    ? (envKey as string)
+    : FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
