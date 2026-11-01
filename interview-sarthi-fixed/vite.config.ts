@@ -8,7 +8,11 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [
     tanstackStart(),
-    nitro(),
+    nitro({
+      routeRules: {
+        "/api/**": { proxy: "http://localhost:5000/api/**" },
+      },
+    }),
     viteReact(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),

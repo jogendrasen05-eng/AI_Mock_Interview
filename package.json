@@ -1,0 +1,10 @@
+{
+  "name": "interview-sarthi-subroot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix interview-sarthi-fixed run dev",
+    "server": "npm --prefix interview-sarthi-fixed run server",
+    "build": "npm --prefix interview-sarthi-fixed run build"
+  }
+}
