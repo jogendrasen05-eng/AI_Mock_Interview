@@ -8,17 +8,17 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root.tsx'
-import { Route as AuthRouteImport } from './routes/auth.tsx'
-import { Route as AppRouteImport } from './routes/app.tsx'
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index.tsx'
-import { Route as AppSettingsRouteImport } from './routes/app.settings.tsx'
-import { Route as AppPerformanceRouteImport } from './routes/app.performance.tsx'
-import { Route as AppInterviewRouteImport } from './routes/app.interview.tsx'
-import { Route as AppHistoryRouteImport } from './routes/app.history.tsx'
-import { Route as AppChatRouteImport } from './routes/app.chat.tsx'
-import { Route as AppResultIdRouteImport } from './routes/app.result.$id.tsx'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppPerformanceRouteImport } from './routes/app.performance'
+import { Route as AppInterviewRouteImport } from './routes/app.interview'
+import { Route as AppHistoryRouteImport } from './routes/app.history'
+import { Route as AppChatRouteImport } from './routes/app.chat'
+import { Route as AppResultIdRouteImport } from './routes/app.result.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',

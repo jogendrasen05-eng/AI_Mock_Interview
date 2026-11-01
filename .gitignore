@@ -1,0 +1,11 @@
+# Environments
+.env
+.env*.local
+*.env
+*.local
+
+# Dependencies & Build
+node_modules/
+dist/
+.output/
+.vercel/

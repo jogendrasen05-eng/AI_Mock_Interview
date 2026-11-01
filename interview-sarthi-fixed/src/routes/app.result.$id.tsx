@@ -39,11 +39,11 @@ function ResultPage() {
     noPrintElements.forEach(el => (el as HTMLElement).style.display = 'none');
 
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [10, 10, 10, 10] as [number, number, number, number],
       filename: `Interview_Report_${id}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'jpeg' as const, quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
     };
 
     try {
@@ -84,14 +84,44 @@ function ResultPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("interviews").select("*").eq("id", id).single().then(({ data }) => setInterview(data));
-    supabase.from("interview_questions").select("*").eq("interview_id", id).order("order_index").then(({ data }) => setQuestions(data ?? []));
-    
-    // Load local emotions log
-    const stored = localStorage.getItem(`emotions-${id}`);
-    if (stored) {
-      setEmotions(JSON.parse(stored));
+
+    async function loadResult() {
+      // 1. Fetch Interview Session
+      try {
+        const { data } = await supabase.from("interviews").select("*").eq("id", id).single();
+        if (data) {
+          setInterview(data);
+        } else {
+          const local = localStorage.getItem(`interview-${id}`);
+          if (local) setInterview(JSON.parse(local));
+        }
+      } catch (err) {
+        const local = localStorage.getItem(`interview-${id}`);
+        if (local) setInterview(JSON.parse(local));
+      }
+
+      // 2. Fetch Interview Questions
+      try {
+        const { data } = await supabase.from("interview_questions").select("*").eq("interview_id", id).order("order_index");
+        if (data && data.length > 0) {
+          setQuestions(data);
+        } else {
+          const localQ = localStorage.getItem(`questions-${id}`);
+          if (localQ) setQuestions(JSON.parse(localQ));
+        }
+      } catch (err) {
+        const localQ = localStorage.getItem(`questions-${id}`);
+        if (localQ) setQuestions(JSON.parse(localQ));
+      }
+
+      // 3. Load local emotions log
+      const stored = localStorage.getItem(`emotions-${id}`);
+      if (stored) {
+        setEmotions(JSON.parse(stored));
+      }
     }
+
+    loadResult();
   }, [id, user]);
 
   if (!interview) return <div className="text-center text-muted-foreground py-20">Loading…</div>;
