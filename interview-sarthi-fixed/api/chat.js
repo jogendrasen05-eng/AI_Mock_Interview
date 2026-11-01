@@ -265,9 +265,11 @@ app.post("/api/email", async (req, res) => {
 
 export default app;
 
-if (process.env.NODE_ENV !== "production") {
+// On Vercel serverless, process.env.VERCEL is set and Vercel manages the HTTP server.
+// On Render, Railway, VPS, or local dev, start standalone HTTP server on 0.0.0.0
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

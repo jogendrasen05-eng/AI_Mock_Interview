@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: interview-sarthi-api
+    runtime: node
+    rootDir: interview-sarthi-fixed
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false

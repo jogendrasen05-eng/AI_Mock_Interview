@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "server": "node api/chat.js"
+    "server": "node api/chat.js",
+    "start": "node api/chat.js"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
