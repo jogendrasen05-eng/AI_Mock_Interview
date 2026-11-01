@@ -6,14 +6,27 @@ const FALLBACK_SUPABASE_URL = "https://vzzwkqvbimamyofngdsi.supabase.co";
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6endrcXZiaW1hbXlvZm5nZHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTQ3MTcsImV4cCI6MjA5MzMzMDcxN30.IxxSvQQNPBpdX8uo6Gg-AQfUhuTQVkWu2lc_iuoB120";
 
-function isDummyOrEmpty(val?: string | null): boolean {
-  if (!val || typeof val !== "string") return true;
-  const trimmed = val.trim();
+function cleanKey(val?: string | null): string {
+  if (!val || typeof val !== "string") return "";
+  let trimmed = val.trim();
+  // Strip surrounding quotes if present (e.g. copied literally from .env into Vercel)
+  while (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function isDummyOrInvalid(val?: string | null): boolean {
+  const cleaned = cleanKey(val);
   return (
-    trimmed === "" ||
-    trimmed.includes("your-supabase") ||
-    trimmed.includes("your-project") ||
-    trimmed.includes("<")
+    cleaned === "" ||
+    cleaned.length < 20 ||
+    cleaned.includes("your-supabase") ||
+    cleaned.includes("your-project") ||
+    cleaned.includes("<")
   );
 }
 
@@ -32,9 +45,12 @@ function createSupabaseClient() {
         process.env?.SUPABASE_PUBLISHABLE_KEY ||
         process.env?.SUPABASE_ANON_KEY));
 
-  const SUPABASE_URL = !isDummyOrEmpty(envUrl) ? (envUrl as string) : FALLBACK_SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = !isDummyOrEmpty(envKey)
-    ? (envKey as string)
+  const cleanedUrl = cleanKey(envUrl);
+  const cleanedKey = cleanKey(envKey);
+
+  const SUPABASE_URL = !isDummyOrInvalid(cleanedUrl) ? cleanedUrl : FALLBACK_SUPABASE_URL;
+  const SUPABASE_PUBLISHABLE_KEY = !isDummyOrInvalid(cleanedKey)
+    ? cleanedKey
     : FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
