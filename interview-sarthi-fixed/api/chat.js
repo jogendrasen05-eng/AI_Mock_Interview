@@ -12,12 +12,20 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const rawKey = process.env.GEMINI_API_KEY;
+const effectiveGeminiKey =
+  rawKey && typeof rawKey === "string" && !rawKey.includes("your-gemini")
+    ? rawKey.replace(/["']/g, "").trim()
+    : "";
+
+const genAI = new GoogleGenerativeAI(effectiveGeminiKey);
 
 const CANDIDATE_MODELS = [
-  "gemini-3.5-flash-lite",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-2.5-flash",
   "gemini-3.5-flash",
-  "gemini-3.8-flash",
+  "gemini-1.5-pro",
 ];
 
 // Helper to run Gemini requests with automatic fallback
@@ -89,12 +97,17 @@ Your role:
 - Maintain an encouraging, sharp, and structured tone.`,
 };
 
-// 1. AI Chatbot API Route
-app.post("/api/chat", async (req, res) => {
+// Health check endpoint
+app.get(["/api/health", "/health", "/api/chat", "/"], (req, res) => {
+  res.json({ status: "ok", message: "InterviewSarthi API backend is running" });
+});
+
+// 1. AI Chatbot API Route (Supports /, /chat, /api/chat)
+app.post(["/api/chat", "/chat", "/"], async (req, res) => {
   try {
     const { message, history = [], mode = "general" } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!effectiveGeminiKey) {
       return res.status(500).json({ error: "GEMINI_API_KEY is missing in server environment." });
     }
 
@@ -143,11 +156,11 @@ const SYSTEM_EVALUATOR = `You are an expert interview evaluator. Given a questio
 }
 Be fair but honest. Return pure JSON without extra markdown.`;
 
-app.post("/api/interview", async (req, res) => {
+app.post(["/api/interview", "/interview"], async (req, res) => {
   try {
     const { action, topic, history = [], question, answer, resume, difficulty = "Mid-Level" } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!effectiveGeminiKey) {
       return res.status(500).json({ error: "GEMINI_API_KEY is missing in server environment." });
     }
 
@@ -216,7 +229,7 @@ app.post("/api/interview", async (req, res) => {
 });
 
 // 3. Email PDF Report Route
-app.post("/api/email", async (req, res) => {
+app.post(["/api/email", "/email"], async (req, res) => {
   try {
     const { email, pdfBase64, interviewId, topic } = req.body;
 

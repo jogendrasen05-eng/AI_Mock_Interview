@@ -281,17 +281,28 @@ export default function AIChatbot() {
         }),
       });
 
-      const data = await res.json();
+      let replyText = "";
+      if (!res.ok) {
+        let errDetail = `Server returned HTTP ${res.status}`;
+        try {
+          const errJson = await res.json();
+          errDetail = errJson.reply || errJson.error || errJson.message || errDetail;
+        } catch (_) {}
+        replyText = `⚠️ Error: ${errDetail}`;
+      } else {
+        const data = await res.json();
+        replyText = data.reply || data.error || "Sorry, I encountered an issue processing your request.";
+      }
 
       const aiMessage: Message = {
         id: "ai-" + Date.now(),
         role: "ai",
-        text: data.reply || "Sorry, I encountered an issue processing your request.",
+        text: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
       const errorMessage: Message = {
         id: "err-" + Date.now(),
